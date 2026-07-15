@@ -16,7 +16,13 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - name: Build and test C#
+      - name: Decode sources
+        shell: pwsh
+        run: |
+          $bytes = [Convert]::FromBase64String((Get-Content .workspace-build/csharp-src.b64 -Raw))
+          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\csharp-src.zip", $bytes)
+          Expand-Archive "$env:RUNNER_TEMP\csharp-src.zip" .workspace-build -Force
+      - name: Build C#
         shell: pwsh
         run: |
           dotnet build .workspace-build/csharp/Workspace.sln -c Release
