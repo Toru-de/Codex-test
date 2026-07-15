@@ -1,0 +1,30 @@
+name: Temporary Workspace CSharp Build
+
+on:
+  pull_request:
+    paths:
+      - '.workspace-build/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build and test C#
+        shell: pwsh
+        run: |
+          dotnet build .workspace-build/csharp/Workspace.sln -c Release
+          dotnet publish .workspace-build/csharp/Workspace.Mcp/Workspace.Mcp.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o .workspace-build/artifact
+      - name: Upload C# build
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-csharp-win-x64
+          path: .workspace-build/artifact/**
+          if-no-files-found: error
+          retention-days: 1
